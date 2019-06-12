@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html><head>
+	    <meta charset="utf-8">
+    <title>童老师ThinkPHP交流群：484519446</title>
+
+    <meta name="description" content="Dashboard">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!--Basic Styles-->
+    <link href="__admin__/style/bootstrap.css" rel="stylesheet">
+    <link href="__admin__/style/font-awesome.css" rel="stylesheet">
+    <link href="__admin__/style/weather-icons.css" rel="stylesheet">
+
+    <!--Beyond styles-->
+    <link id="beyond-link" href="__admin__/style/beyond.css" rel="stylesheet" type="text/css">
+    <link href="__admin__/style/demo.css" rel="stylesheet">
+    <link href="__admin__/style/typicons.css" rel="stylesheet">
+    <link href="__admin__/style/animate.css" rel="stylesheet">
+
+    <link href="__admin__/style/jquery-ui.min.css" rel="stylesheet">
+</head>
+<body>
+	<!-- 头部 -->
+	{include file="public/top" /}
+	<!-- /头部 -->
+	
+	<div class="main-container container-fluid">
+		<div class="page-container">
+			            <!-- Page Sidebar -->
+           {include file="public/left" /}
+            <!-- /Page Sidebar -->
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Page Breadcrumb -->
+                <div class="page-breadcrumbs">
+                    <ul class="breadcrumb">
+                                        <li>
+                        <a href="#">系统</a>
+                    </li>
+                                        <li class="active">栏目管理</li>
+                                        </ul>
+                </div>
+                <!-- /Page Breadcrumb -->
+
+                <!-- Page Body -->
+                <div class="page-body">
+                    
+<button type="button" tooltip="添加栏目" class="btn btn-sm btn-azure btn-addon" onClick="javascript:window.location.href = '{:url('admin/cate/add')}'"> <i class="fa fa-plus"></i> Add
+</button>
+<div class="row">
+    <div class="col-lg-12 col-sm-12 col-xs-12">
+        <div class="widget">
+            <div class="widget-body">
+                <div class="flip-scroll">
+                    <table class="table table-bordered table-hover">
+                        <thead class="">
+                            <tr>
+                                <th class="text-center">ID</th>
+                                <th class="text-left">栏目名称</th>
+                                <th class="text-center">栏目图片</th>
+                                <th class="text-center">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody  class="sortable">
+                            {volist name="cate" id="vo"}
+                            <tr  class="ui-state-default" trdel="tr_{$vo.id}">
+                                <td align="center" class="m_ttitle" style="cursor:move;background:#00FFFF;"><i style="float:left;cursor:move" class="fa fa-arrows-v"></i>{$vo.id}</td>
+                                <td align="left"><?php echo str_repeat('---------|', $vo['level']);?>{$vo.cate_name}</td>
+                                <td align="center">
+                                    {if condition="$vo.thumb"}<img src="__cate__/{$vo.thumb}" height="30">{else /}暂无{/if}
+                                </td>
+                                <td align="center">
+                                    <a href="{:url('edit',array('id'=>$vo.id))}" class="btn btn-primary btn-sm shiny">
+                                        <i class="fa fa-edit"></i> 编辑
+                                    </a>
+                                    <a href="#" delid="{$vo.id}" onClick="ajaxdel(this)" class="btn btn-danger btn-sm shiny">
+                                        <i class="fa fa-trash-o"></i> 删除
+                                    </a>
+                                </td>
+                            </tr>
+                            {/volist}                           
+                                                    </tbody>
+                    </table>
+                </div>
+                <div>
+                	                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+                </div>
+                <!-- /Page Body -->
+            </div>
+            <!-- /Page Content -->
+		</div>	
+	</div>
+
+	    <!--Basic Scripts-->
+    <script src="__admin__/style/jquery_002.js"></script>
+    <script src="__admin__/style/bootstrap.js"></script>
+    <script src="__admin__/style/jquery.js"></script>
+    <!--Beyond Scripts-->
+    <script src="__admin__/style/beyond.js"></script>
+
+    <script src="__admin__/style/jquery-ui.min.js"></script>
+
+    <script src="__admin__/plus/layer/layer.js"></script>
+    <script type="text/javascript">
+    $(function() {
+        //  自定义排序
+        $(".sortable" ).sortable({
+            connectWith: ".column",
+            handle: ".m_ttitle",
+            placeholder: "portlet-placeholder ui-corner-all",
+            update:function(){
+                var save=[];
+                $(".m_ttitle").each(function(){
+                    save.push($(this).text());
+                });
+                var arr = save.join("-");
+                $.ajax({
+                    type:"post",
+                    dataType:"json",
+                    data:{sort:arr},
+                    url:"{:url('lst')}",
+                    beforeSend:function(){
+                        var index = layer.load(1);
+                    },
+                    success:function(data){    
+                        layer.msg('排序成功', {icon: 1});
+                        layer.closeAll("loading");
+                    },
+                    error:function(){
+                        layer.msg('排序失败',{anim: 6,icon: 5});
+                        layer.closeAll("loading");
+                        
+                    },
+                });
+            
+            }
+       
+        });
+        $( ".sortable" ).disableSelection(); 
+    });
+    </script>
+    <script type="text/javascript">
+    function ajaxdel(o){
+        layer.confirm('确认删除该栏目及其子栏目吗?', {icon: 3, title:'提示'}, function(index){
+            var id=$(o).attr('delid');
+            $.ajax({
+                type:"post",
+                dataType:"json",
+                data:{id:id},
+                url:"{:url('del')}",
+                ajaxSend:function(){
+                    var index = layer.load(0); //换了种风格
+                },
+                success:function(data){
+                    layer.close(index);
+                    if(data!=0){
+                        $.each(data,function(key,value){
+                            $("[trdel=tr_"+value+"]").remove();
+                        });
+                        layer.msg('删除成功',{icon: 1}); 
+                    }else{
+                        layer.msg('删除失败',{anim: 6,icon: 5});
+                    }
+
+                },
+                error:function(){
+                    layer.close(index);
+                    layer.msg('删除失败',{anim: 6,icon: 5});
+                }
+            });
+
+        });
+    }
+
+
+    </script>
+
+</body></html>
